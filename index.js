@@ -21,12 +21,15 @@ app.use((err, req, res, next) => {
 
 app.get('/build', async function (req, res) {
     console.log('processing')
-    const browser = await puppeteer.launch();
+    const browser = await puppeteer.launch({
+        executablePath: '/usr/bin/chromium-browser',
+        args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage']
+    });
     const page = await browser.newPage();
     page.on('console', consoleObj => console.log(consoleObj.text()));
     const viewPort={width:1191, height:937};
     await page.setViewport(viewPort);
-    await page.goto('http://localhost/resume/', { waitUntil: 'networkidle2' })
+    await page.goto('http://192.168.99.104:8081', { waitUntil: 'networkidle2' })
 
     await page.evaluate(async () => {
         const a4 = {
@@ -87,6 +90,7 @@ app.get('/build', async function (req, res) {
             SectionWrap.innerHTML = html;
         }
     });
+    console.log('saving pdf');
     
     await page.pdf({
         path: 'resume.pdf',
